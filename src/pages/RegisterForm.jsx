@@ -1,16 +1,12 @@
-// src/pages/RegisterForm.jsx
 import React from 'react';
-import {
-  Container,
-  TextField,
-  Button,
-  Typography,
-  Box,
-  Grid,
-} from '@mui/material';
+import { Container, TextField, Button, Typography, Box, Grid } from '@mui/material';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
+import bcrypt from 'bcryptjs';
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -26,6 +22,7 @@ const RegisterForm = () => {
 
   return (
     <Container maxWidth="sm">
+      <ToastContainer />
       <Typography variant="h4" align="center" sx={{ my: 4 }}>
         Đăng ký tài khoản
       </Typography>
@@ -37,9 +34,19 @@ const RegisterForm = () => {
           confirmPassword: '',
         }}
         validationSchema={validationSchema}
-        onSubmit={(values) => {
-          console.log('Đăng ký thành công:', values);
-          navigate('/login');
+        onSubmit={async (values) => {
+          try {
+            const hashedPassword = await bcrypt.hash(values.password, 10);
+            await axios.post('http://localhost:3001/users', {
+              fullName: values.fullName,
+              email: values.email,
+              password: hashedPassword,
+            });
+            toast.success('Đăng ký thành công!');
+            navigate('/login');
+          } catch (err) {
+            toast.error('Đăng ký thất bại!');
+          }
         }}
       >
         {({ values, errors, touched, handleChange }) => (

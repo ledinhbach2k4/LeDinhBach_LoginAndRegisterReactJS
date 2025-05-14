@@ -1,9 +1,13 @@
-// src/components/Navbar.jsx
 import React from 'react';
 import { AppBar, Toolbar, Button, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../redux/slices/authSlice';
 
 const Navbar = () => {
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const dispatch = useDispatch();
+
   return (
     <AppBar position="static" color="primary">
       <Toolbar>
@@ -11,8 +15,14 @@ const Navbar = () => {
           Tour Booking
         </Typography>
         <Button color="inherit" component={Link} to="/">Trang chủ</Button>
-        <Button color="inherit" component={Link} to="/login">Đăng nhập</Button>
-        <Button color="inherit" component={Link} to="/register">Đăng ký</Button>
+        {isAuthenticated ? (
+          <Button color="inherit" onClick={() => dispatch(logout())}>Đăng xuất</Button>
+        ) : (
+          <>
+            <Button color="inherit" component={Link} to="/login">Đăng nhập</Button>
+            <Button color="inherit" component={Link} to="/register">Đăng ký</Button>
+          </>
+        )}
       </Toolbar>
     </AppBar>
   );
