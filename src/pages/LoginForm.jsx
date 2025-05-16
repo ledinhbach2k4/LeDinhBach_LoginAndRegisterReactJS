@@ -8,6 +8,7 @@ import { login } from '../redux/slices/authSlice';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
+import bcrypt from 'bcryptjs';
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -25,11 +26,25 @@ const LoginForm = () => {
         })}
         onSubmit={async (values) => {
           try {
-            const response = await axios.post('http://localhost:3001/login', values);
-            dispatch(login(response.data.user));
+            const res = await axios.get(`http://localhost:3001/users?email=${values.email}`);
+            const user = res.data[0];
+
+            if (!user) {
+              toast.error('Email không tồn tại');
+              return;
+            }
+
+            const isMatch = bcrypt.compareSync(values.password, user.password);
+            if (!isMatch) {
+              toast.error('Sai mật khẩu');
+              return;
+            }
+
+            dispatch(login(user));
             toast.success('Đăng nhập thành công!');
             navigate('/');
           } catch (err) {
+            console.error('Lỗi đăng nhập:', err);
             toast.error('Đăng nhập thất bại!');
           }
         }}
